@@ -1063,4 +1063,170 @@ G2L["13d"] = Instance.new("TextButton", G2L["2"]);
 G2L["13d"]["BorderSizePixel"] = 0;
 G2L["13d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["13d"]["FontFace"] = Font.new([[rbxasset://fonts/families/LegacyArial.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-G2L["13d"]["TextColor3"] = Color3.fromRGB(255, 255,…
+G2L["13d"]["TextColor3"] = Color3.fromRGB(255, 255, 	end)
+end;
+task.spawn(C_e7);
+-- StarterGui.DeltaKeyboard.Main.Drag
+local function C_136()
+	local script = G2L["136"];
+	local function dragify(Frame)
+		dragToggle = nil
+		dragSpeed = .25 -- You can edit this.
+		dragInput = nil
+		dragStart = nil
+		dragPos = nil
+
+		function updateInput(input)
+			Delta = input.Position - dragStart
+			Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+			game:GetService("TweenService"):Create(Frame, TweenInfo.new(.25), {Position = Position}):Play()
+		end
+
+		Frame.InputBegan:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+				dragToggle = true
+				dragStart = input.Position
+				startPos = Frame.Position
+				input.Changed:Connect(function()
+					if (input.UserInputState == Enum.UserInputState.End) then
+						dragToggle = false
+					end
+				end)
+			end
+		end)
+
+		Frame.InputChanged:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				dragInput = input
+			end
+		end)
+
+		game:GetService("UserInputService").InputChanged:Connect(function(input)
+			if (input == dragInput and dragToggle) then
+				updateInput(input)
+			end
+		end)
+	end
+	task.spawn(function()
+		dragify(script.Parent.Parent.FloatingIcon)
+	end)
+	dragify(script.Parent)
+
+end;
+task.spawn(C_136);
+-- StarterGui.DeltaKeyboard.Main.ButtonHandler
+local function C_138()
+	local script = G2L["138"];
+	local buttons = script.Parent
+	local ts = game.TweenService
+	local cooldown = false
+
+	buttons.Close.MouseButton1Up:Connect(function()
+		script.Parent.Parent:Destroy()
+	end)
+	buttons.Close.MouseEnter:Connect(function()
+		buttons.Close.BackgroundColor3 = Color3.fromRGB(220, 0, 0)
+	end)
+	buttons.Close.MouseLeave:Connect(function()
+		buttons.Close.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	end)
+	buttons.Minimize.MouseButton1Up:Connect(function()
+
+		script.Parent.Visible = false
+		script.Parent.Parent.FloatingIcon.Visible = true
+	end)
+	buttons.Window.MouseButton1Up:Connect(function()
+		if not cooldown then
+			if script.Parent.Background.Visible == true then
+				script.Parent.ToggleRGB.Visible = false
+				script.Parent.Settings.Visible = false
+				script.Parent.Background.Visible = false
+				script.Parent.ToggleShift.Visible = false
+				local ti = TweenInfo.new(.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+				local tw = ts:Create(script.Parent, ti, {Size = UDim2.new(0, 478,0, 29)})
+				tw:Play()
+				cooldown = true
+				tw.Completed:Wait()
+				cooldown = false
+			elseif script.Parent.Background.Visible ==false then
+
+				local ti = TweenInfo.new(.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+				local tw = ts:Create(script.Parent, ti, {Size = UDim2.new(0, 478,0, 236)})
+				tw:Play()
+				cooldown = true
+				tw.Completed:Wait()
+				script.Parent.ToggleRGB.Visible = true
+				script.Parent.Settings.Visible = true
+				script.Parent.Background.Visible = true
+				script.Parent.ToggleShift.Visible = true
+				cooldown = false
+			end
+		end
+	end)
+
+	buttons.Settings.MouseButton1Up:Connect(function()
+		script.Parent.Parent.IsSelectingKey.Value = true
+	end)
+
+	local IsSelecting =script.Parent.Parent.IsSelectingKey
+	IsSelecting:GetPropertyChangedSignal("Value"):Connect(function()
+		if IsSelecting.Value == true then
+			script.Parent.Title.Text = "Delta Mobile - Keyboard (Selecting Key)"
+		elseif IsSelecting.Value == false then
+			script.Parent.Title.Text = "Delta Mobile - Keyboard Cracked By ATA"
+		end
+	end)
+
+	script.Parent.ToggleShift.MouseButton1Up:Connect(function()
+		if script.Parent.Parent.ToggleShift.Value == true then
+			script.Parent.Parent.ToggleShift.Value = false
+			script.Parent.ToggleShift.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+		elseif script.Parent.Parent.ToggleShift.Value == false then
+			script.Parent.Parent.ToggleShift.Value = true
+			script.Parent.ToggleShift.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+		end
+	end)
+end;
+task.spawn(C_138);
+-- StarterGui.DeltaKeyboard.CreateKey.LocalScript
+local function C_152()
+	local script = G2L["152"];
+	local close = script.Parent.Close
+	local create = script.Parent.Create
+	local textbox = script.Parent.TextBox
+
+	script.Parent.Draggable = true
+	close.MouseButton1Up:Connect(function()
+		script.Parent.Visible = false
+	end)
+	create.MouseButton1Up:Connect(function()
+		if textbox.Text ~= "" then
+			local key = script.Parent.Parent.KEY:Clone()
+			key.Parent = script.Parent.Parent.Keys
+			key.Visible = true
+			key.Draggable = true
+			key.Name = textbox.Text
+			key.MouseButton1Up:Connect(function()
+				keyrelease(Enum.KeyCode[textbox.Text])
+			end)
+			key.MouseButton1Down:Connect(function()
+				keypress(Enum.KeyCode[textbox.Text])
+			end)
+			key.Close.MouseButton1Up:Connect(function()
+				key:Destroy()
+			end)
+		end
+	end)
+end;
+task.spawn(C_152);
+-- StarterGui.DeltaKeyboard.FloatingIcon.LocalScript
+local function C_159()
+	local script = G2L["159"];
+	script.Parent.MouseButton1Up:Connect(function()
+		script.Parent.Visible=false
+		script.Parent.Parent.Main.Visible = true
+	end)
+end;
+task.spawn(C_159);
+
+return G2L["1"], require;
